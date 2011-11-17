@@ -1,0 +1,24 @@
+In order for this script to work you need to install it in some directory (for example /usr/local/bin).
+And then create 5 symlinks to it:
+1. ln -s /usr/local/bin/multy-command.sh /usr/local/bin/sexec
+2. ln -s /usr/local/bin/multy-command.sh /usr/local/bin/mexec
+3. ln -s /usr/local/bin/multy-command.sh /usr/local/bin/fexec
+4. ln -s /usr/local/bin/multy-command.sh /usr/local/bin/scopy
+5. ln -s /usr/local/bin/multy-command.sh /usr/local/bin/mcopy
+
+This present us with 5 different commands residing in one single script. This way we can easly change
+all the commands at once.
+
+Some information about the commands:
+
+sexec - Sequential execution of a certain command on all servers from $server_list
+mexec - parallel execution of a certain command on all servers from $server_list performed in background
+fexec - parallel execution of a certain command on all servers from $server_list performed in background
+but print the output with the hostname of every machine, so we can get better ordered output
+scopy - Sequential copy of a certain file to all servers from $server_list, this is usefull for files
+bigger then 2-3MB
+mcopy - parallel copy of a certain file to all server from $server_list, this is usefull for transfering
+configuration files and archives under 2MB
+
+
+
