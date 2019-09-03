@@ -1,5 +1,5 @@
 #!/bin/bash
-version='1.5'
+version='1.6'
 server_list=$(<my_server_list);
 logs_dir='/home/hackman'
 logfile=$logs_dir/sexec
@@ -8,6 +8,13 @@ servercount=0
 okcount=0
 failedcount=0
 failedserver=()
+
+function check_user {
+	if ! pwd | grep -q "$check_for_user" ; then
+		echo "You are not allowed to use this command!"
+		exit 1
+	fi
+}
 
 if [[ $0 =~ s|m|fexec ]]; then
 	echo "$(date +'%d.%b.%Y %T') $1" >> $logfile
@@ -51,10 +58,7 @@ for server in $server_list; do
 		let servercount++
 	fi
 	if [[ $0 =~ mexec ]]; then
-		if ! pwd | grep -q "$check_for_user" ; then
-			echo "You are not allowed to use this command!"
-			exit 1
-		fi
+		check_user $?
 		file_cmd=0
 		if [ $# -ne 1 ]; then
 			if [ $# == 2 ] && [ "$1" == '-' ] && [ -f "$2" ]; then
@@ -83,10 +87,7 @@ for server in $server_list; do
 		let servercount++
 	fi
 	if [[ $0 =~ fexec ]]; then
-		if ! pwd | grep -q "$check_for_user"; then
-			echo "You are not allowed to use this command!"
-			exit 1
-		fi
+		check_user $*
 		if [ $# -ne 1 ]; then
 			echo -e "Usage: $0 command\nExample: $0 'cp /etc/exim.conf /etc/exim.old'\n"
 			exit 1
@@ -114,6 +115,7 @@ for server in $server_list; do
 		let servercount++
 	fi
 	if [[ $0 =~ sexec ]]; then
+		check_user $*
 		if [ $# -ne 1 ]; then
 			echo -e "Usage: $0 command\nExample: $0 'cp /etc/exim.conf /etc/exim.old'\n"
 			exit 1
