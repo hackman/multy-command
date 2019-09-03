@@ -145,14 +145,14 @@ for server in $server_list; do
 	if [[ $0 =~ sexec ]]; then
 		sexec $*
 	fi
-	if [[ $0 =~ fcopy ]]; then
-		fcopy $*
+	if [[ $0 =~ fexec ]]; then
+		fexec $*
 	fi
 	if [[ $0 =~ mcopy ]]; then
 		mcopy $*
 	fi
-	if [[ $0 =~ sexec ]]; then
-		sexec $*
+	if [[ $0 =~ scopy ]]; then
+		scopy $*
 	fi
 done
 if [[ $0 =~ fexec ]]; then
