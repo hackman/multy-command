@@ -16,6 +16,25 @@ function check_user {
 	fi
 }
 
+function exec_usage {
+	if [ $# -ne 1 ]; then
+		if [ $# == 2 ] && [ "$1" == '-' ] && [ -f "$2" ]; then
+			echo "Using script file: $2"
+			file_cmd=1
+		else
+			echo -e "Usage: $0 command|- script_file\nThe - script_file option can be used only with mexec and sexec.\nExamples:\n\t$0 'cp /etc/exim.conf /etc/exim.old'\n\t$0 - script.sh\n"
+			exit 1
+		fi
+	fi
+}
+
+function copy_usage {
+	if [ $# -ne 2 ]; then
+		echo -e "Usage: $0 file location\nExample: $0 test.sh /usr/local/sbin\n"
+		exit 1
+	fi
+}
+
 if [[ $0 =~ s|m|fexec ]]; then
 	echo "$(date +'%d.%b.%Y %T') $1" >> $logfile
 	if echo $1 | grep -q '\s*rm ' ; then
@@ -45,10 +64,7 @@ echo "$(date +'%d.%b.%Y %T') File $1 copied to all servers at $2" >> $logfile
 
 for server in $server_list; do
 	if [[ $0 =~ mcopy  ]]; then
-		if [ $# -ne 2 ]; then
-			echo -e "Usage: $0 file location\nExample: $0 test.sh /usr/local/sbin\n"
-			exit 1
-		fi
+		copy_usage $*
 		if scp $1 $server:$2 2>/dev/null & then
 			let okcount++
 		else
@@ -58,17 +74,9 @@ for server in $server_list; do
 		let servercount++
 	fi
 	if [[ $0 =~ mexec ]]; then
-		check_user $?
+		check_user $*
+		exec_usage $*
 		file_cmd=0
-		if [ $# -ne 1 ]; then
-			if [ $# == 2 ] && [ "$1" == '-' ] && [ -f "$2" ]; then
-				echo "Using script file: $2"
-				file_cmd=1
-			else
-				echo -e "Usage: $0 command\nExample: $0 'cp /etc/exim.conf /etc/exim.old'\n"
-				exit 1
-			fi
-		fi
 		if [ "$file_cmd" == 0 ]; then
 			if ssh -t -q $server "$1" 2>/dev/null & then
 				let okcount++
@@ -88,10 +96,7 @@ for server in $server_list; do
 	fi
 	if [[ $0 =~ fexec ]]; then
 		check_user $*
-		if [ $# -ne 1 ]; then
-			echo -e "Usage: $0 command\nExample: $0 'cp /etc/exim.conf /etc/exim.old'\n"
-			exit 1
-		fi
+		exec_usage $*
 		if ssh -t -q $server "echo \"\$(hostname) \$($1)\"" 2>/dev/null & then
 			let okcount++
 		else
@@ -101,10 +106,7 @@ for server in $server_list; do
 		let servercount++
 	fi
 	if [[ $0 =~ scopy ]]; then
-		if [ $# -ne 2 ]; then
-			echo -e "Usage: $0 file location\nExample: $0 test.sh /usr/local/sbin\n"
-			exit 1
-		fi
+		copy_usage $*
 		echo $server
 		if scp $1 $server:$2; then
 			let okcount++
@@ -116,10 +118,7 @@ for server in $server_list; do
 	fi
 	if [[ $0 =~ sexec ]]; then
 		check_user $*
-		if [ $# -ne 1 ]; then
-			echo -e "Usage: $0 command\nExample: $0 'cp /etc/exim.conf /etc/exim.old'\n"
-			exit 1
-		fi
+		exec_usage $*
 		echo $server
 		if ssh -q -t $server "$1"; then
 			let okcount++
