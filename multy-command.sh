@@ -10,7 +10,7 @@ failedcount=0
 failedserver=()
 if [[ $0 =~ s|m|fexec ]]; then
 	echo "$(date +'%d.%b.%Y %T') $1" >> $logs_dir/sexec
-	if ( echo $1 | grep '\s*rm ' > /dev/null ); then
+	if echo $1 | grep -q '\s*rm ' ; then
 		echo -e -n "Command: $1\nAre you sure you want to execute this command(y/n): "
 		read y
 		if [ "$y" != 'y' ]; then
@@ -41,7 +41,7 @@ for server in $server_list; do
 			echo -e "Usage: $0 file location\nExample: $0 test.sh /usr/local/sbin\n"
 			exit 1
 		fi
-		if ( scp $1 $server:$2 2>/dev/null & ); then
+		if scp $1 $server:$2 2>/dev/null & then
 			let okcount++
 		else
 			let failedcount++
@@ -50,7 +50,7 @@ for server in $server_list; do
 		let servercount++
 	fi
 	if [[ $0 =~ mexec ]]; then
-		if ( ! pwd | grep "$check_for_user" > /dev/null ); then
+		if ! pwd | grep -q "$check_for_user" ; then
 			echo "You are not allowed to use this command!"
 			exit 1
 		fi
@@ -65,14 +65,14 @@ for server in $server_list; do
 			fi
 		fi
 		if [ "$file_cmd" == 0 ]; then
-			if ( ssh -t -q $server "$1" 2>/dev/null & ); then
+			if ssh -t -q $server "$1" 2>/dev/null & then
 				let okcount++
 			else
 				let failedcount++
 				failedservers=(${failedservers[*]} $server)
 			fi
 		else
-			if ( ssh -t -q $server < $2 2>/dev/null & ); then
+			if ssh -t -q $server < $2 2>/dev/null & then
 				let okcount++
 			else
 				let failedcount++
@@ -82,7 +82,7 @@ for server in $server_list; do
 		let servercount++
 	fi
 	if [[ $0 =~ fexec ]]; then
-		if ( ! pwd | grep "$check_for_user" > /dev/null ); then
+		if ! pwd | grep -q "$check_for_user"; then
 			echo "You are not allowed to use this command!"
 			exit 1
 		fi
@@ -90,7 +90,7 @@ for server in $server_list; do
 			echo -e "Usage: $0 command\nExample: $0 'cp /etc/exim.conf /etc/exim.old'\n"
 			exit 1
 		fi
-		if ( ssh -t -q $server "echo \"\$(hostname) \$($1)\"" 2>/dev/null & ); then
+		if ssh -t -q $server "echo \"\$(hostname) \$($1)\"" 2>/dev/null & then
 			let okcount++
 		else
 			let failedcount++
@@ -104,7 +104,7 @@ for server in $server_list; do
 			exit 1
 		fi
 		echo $server
-		if ( scp $1 $server:$2 ); then
+		if scp $1 $server:$2; then
 			let okcount++
 		else
 			let failedcount++
@@ -118,7 +118,7 @@ for server in $server_list; do
 			exit 1
 		fi
 		echo $server
-		if ( ssh -q -t $server "$1" ); then
+		if ssh -q -t $server "$1"; then
 			let okcount++
 		else
 			let failedcount++
