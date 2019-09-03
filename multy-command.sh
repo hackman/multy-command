@@ -1,5 +1,5 @@
 #!/bin/bash
-version='1.2'
+version='1.3'
 server_list=$(<my_server_list);
 logs_dir='/home/hackman'
 logfile='/home/hackman/mutli-command.log'
@@ -8,7 +8,7 @@ servercount=0
 okcount=0
 failedcount=0
 failedserver=()
-if [[ "$0" =~ 'sexec' ]] || [[ "$0" =~ 'mexec' ]] || "$0" =~ 'fexec' ]]; then
+if [[ "$0" =~ 'sexec' ]] || [[ "$0" =~ 'mexec' ]] || [[ "$0" =~ 'fexec' ]]; then
 	echo "$(date +'%d.%b.%Y %T') $1" >> $logs_dir/sexec
 	if ( echo $1 | grep '\s*rm ' > /dev/null ); then
 		echo -e -n "Command: $1\nAre you sure you want to execute this command(y/n): "
