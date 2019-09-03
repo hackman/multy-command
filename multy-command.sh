@@ -1,5 +1,5 @@
 #!/bin/bash
-version='1.1.2'
+version='1.2'
 server_list=$(<my_server_list);
 logs_dir='/home/hackman'
 logfile='/home/hackman/mutli-command.log'
@@ -112,7 +112,7 @@ for server in $server_list; do
 		fi
 		let servercount++
 	fi
-	if [[ "$0" 'sexec' ]]; then
+	if [[ "$0" =~ 'sexec' ]]; then
 		if [ $# -ne 1 ]; then
 			echo -e "Usage: $0 command\nExample: $0 'cp /etc/exim.conf /etc/exim.old'\n"
 			exit 1
