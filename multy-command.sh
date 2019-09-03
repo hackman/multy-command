@@ -1,7 +1,8 @@
 #!/bin/bash
-version='1.1.0'
+version='1.1.1'
 server_list=$(<my_server_list);
 logs_dir='/home/hackman'
+logfile='/home/hackman/mutli-command.log'
 check_for_user='hackman'
 servercount=0
 okcount=0
