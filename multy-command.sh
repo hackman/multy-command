@@ -1,5 +1,5 @@
 #!/bin/bash
-version='1.7'
+version='2.0'
 server_list=$(<my_server_list);
 logs_dir='/home/hackman'
 logfile=$logs_dir/sexec
@@ -35,6 +35,82 @@ function copy_usage {
 	fi
 }
 
+function mexec {
+	check_user $*
+	exec_usage $*
+	file_cmd=0
+	if [ "$file_cmd" == 0 ]; then
+		if ssh -t -q $server "$1" 2>/dev/null & then
+			let okcount++
+		else
+			let failedcount++
+			failedservers=(${failedservers[*]} $server)
+		fi
+	else
+		if ssh -t -q $server < $2 2>/dev/null & then
+			let okcount++
+		else
+			let failedcount++
+			failedservers=(${failedservers[*]} $server)
+		fi
+	fi
+	let servercount++
+}
+function sexec {
+	check_user $*
+	exec_usage $*
+	echo $server
+	file_cmd=0
+	if [ "$file_cmd" == 0 ]; then
+		if ssh -t -q $server "$1" 2>/dev/null & then
+			let okcount++
+		else
+			let failedcount++
+			failedservers=(${failedservers[*]} $server)
+		fi
+	else
+		if ssh -t -q $server < $2 2>/dev/null & then
+			let okcount++
+		else
+			let failedcount++
+			failedservers=(${failedservers[*]} $server)
+		fi
+	fi
+	let servercount++
+}
+function fexec {
+	check_user $*
+	exec_usage $*
+	if ssh -t -q $server "echo \"\$(hostname) \$($1)\"" 2>/dev/null & then
+		let okcount++
+	else
+		let failedcount++
+		failedservers=(${failedservers[*]} $server)
+	fi
+	let servercount++
+}
+function mcopy {
+	copy_usage $*
+	if scp $1 $server:$2 2>/dev/null & then
+		let okcount++
+	else
+		let failedcount++
+		failedservers=(${failedservers[*]} $server)
+	fi
+	let servercount++
+}
+function scopy {
+	copy_usage $*
+	echo $server
+	if scp $1 $server:$2; then
+		let okcount++
+	else
+		let failedcount++
+		failedservers=(${failedservers[*]} $server)
+	fi
+	let servercount++
+}
+
 if [[ $0 =~ s|m|fexec ]]; then
 	echo "$(date +'%d.%b.%Y %T') $1" >> $logfile
 	if echo $1 | grep -q '\s*rm ' ; then
@@ -63,80 +139,20 @@ fi
 echo "$(date +'%d.%b.%Y %T') File $1 copied to all servers at $2" >> $logfile
 
 for server in $server_list; do
-	if [[ $0 =~ mcopy  ]]; then
-		copy_usage $*
-		if scp $1 $server:$2 2>/dev/null & then
-			let okcount++
-		else
-			let failedcount++
-			failedservers=(${failedservers[*]} $server)
-		fi
-		let servercount++
-	fi
 	if [[ $0 =~ mexec ]]; then
-		check_user $*
-		exec_usage $*
-		file_cmd=0
-		if [ "$file_cmd" == 0 ]; then
-			if ssh -t -q $server "$1" 2>/dev/null & then
-				let okcount++
-			else
-				let failedcount++
-				failedservers=(${failedservers[*]} $server)
-			fi
-		else
-			if ssh -t -q $server < $2 2>/dev/null & then
-				let okcount++
-			else
-				let failedcount++
-				failedservers=(${failedservers[*]} $server)
-			fi
-		fi
-		let servercount++
-	fi
-	if [[ $0 =~ fexec ]]; then
-		check_user $*
-		exec_usage $*
-		if ssh -t -q $server "echo \"\$(hostname) \$($1)\"" 2>/dev/null & then
-			let okcount++
-		else
-			let failedcount++
-			failedservers=(${failedservers[*]} $server)
-		fi
-		let servercount++
-	fi
-	if [[ $0 =~ scopy ]]; then
-		copy_usage $*
-		echo $server
-		if scp $1 $server:$2; then
-			let okcount++
-		else
-			let failedcount++
-			failedservers=(${failedservers[*]} $server)
-		fi
-		let servercount++
+		mexec $*
 	fi
 	if [[ $0 =~ sexec ]]; then
-		check_user $*
-		exec_usage $*
-		echo $server
-		file_cmd=0
-		if [ "$file_cmd" == 0 ]; then
-			if ssh -t -q $server "$1" 2>/dev/null & then
-				let okcount++
-			else
-				let failedcount++
-				failedservers=(${failedservers[*]} $server)
-			fi
-		else
-			if ssh -t -q $server < $2 2>/dev/null & then
-				let okcount++
-			else
-				let failedcount++
-				failedservers=(${failedservers[*]} $server)
-			fi
-		fi
-		let servercount++
+		sexec $*
+	fi
+	if [[ $0 =~ fcopy ]]; then
+		fcopy $*
+	fi
+	if [[ $0 =~ mcopy ]]; then
+		mcopy $*
+	fi
+	if [[ $0 =~ sexec ]]; then
+		sexec $*
 	fi
 done
 if [[ $0 =~ fexec ]]; then
