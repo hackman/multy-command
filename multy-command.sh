@@ -1,5 +1,5 @@
 #!/bin/bash
-version='1.3'
+version='1.4'
 server_list=$(<my_server_list);
 logs_dir='/home/hackman'
 logfile='/home/hackman/mutli-command.log'
@@ -8,7 +8,7 @@ servercount=0
 okcount=0
 failedcount=0
 failedserver=()
-if [[ "$0" =~ 'sexec' ]] || [[ "$0" =~ 'mexec' ]] || [[ "$0" =~ 'fexec' ]]; then
+if [[ $0 =~ sexec ]] || [[ $0 =~ mexec ]] || [[ $0 =~ fexec ]]; then
 	echo "$(date +'%d.%b.%Y %T') $1" >> $logs_dir/sexec
 	if ( echo $1 | grep '\s*rm ' > /dev/null ); then
 		echo -e -n "Command: $1\nAre you sure you want to execute this command(y/n): "
@@ -17,26 +17,26 @@ if [[ "$0" =~ 'sexec' ]] || [[ "$0" =~ 'mexec' ]] || [[ "$0" =~ 'fexec' ]]; then
 			exit 1
 		fi
 	fi
-	if [[ "$1" =~ 'reboot' ]]; then
+	if [[ $1 =~ reboot ]]; then
 		echo "You can not reboot the servers using $0\!"
 		exit 1
 	fi
-	if [[ "$1" =~ 'halt' ]]; then
+	if [[ $1 =~ halt ]]; then
 		echo "You can not reboot the servers using $0\!"
 		exit 1
 	fi
 fi
 
-if [[ "$0" =~ 'scopy' ]]; then
+if [[ $0 =~ scopy ]]; then
 	logfile="$logs_dir/mcopy"
 fi
-if [[ "$0" =~ 'mcopy' ]]; then
+if [[ $0 =~ mcopy ]]; then
 	logfile="$logs_dir/scopy"
 fi
 echo "$(date +'%d.%b.%Y %T') File $1 copied to all servers at $2" >> $logfile
 
 for server in $server_list; do
-	if [[ "$0" =~ 'mcopy' ]]; then
+	if [[ $0 =~ mcopy  ]]; then
 		if [ $# -ne 2 ]; then
 			echo -e "Usage: $0 file location\nExample: $0 test.sh /usr/local/sbin\n"
 			exit 1
@@ -49,7 +49,7 @@ for server in $server_list; do
 		fi
 		let servercount++
 	fi
-	if [[ "$0" =~ 'mexec' ]]; then
+	if [[ $0 =~ mexec ]]; then
 		if ( ! pwd | grep "$check_for_user" > /dev/null ); then
 			echo "You are not allowed to use this command!"
 			exit 1
@@ -81,7 +81,7 @@ for server in $server_list; do
 		fi
 		let servercount++
 	fi
-	if [[ "$0" =~ 'fexec' ]]; then
+	if [[ $0 =~ fexec ]]; then
 		if ( ! pwd | grep "$check_for_user" > /dev/null ); then
 			echo "You are not allowed to use this command!"
 			exit 1
@@ -98,7 +98,7 @@ for server in $server_list; do
 		fi
 		let servercount++
 	fi
-	if [[ "$0" =~ 'scopy' ]]; then
+	if [[ $0 =~ scopy ]]; then
 		if [ $# -ne 2 ]; then
 			echo -e "Usage: $0 file location\nExample: $0 test.sh /usr/local/sbin\n"
 			exit 1
@@ -112,7 +112,7 @@ for server in $server_list; do
 		fi
 		let servercount++
 	fi
-	if [[ "$0" =~ 'sexec' ]]; then
+	if [[ $0 =~ sexec ]]; then
 		if [ $# -ne 1 ]; then
 			echo -e "Usage: $0 command\nExample: $0 'cp /etc/exim.conf /etc/exim.old'\n"
 			exit 1
@@ -127,7 +127,7 @@ for server in $server_list; do
 		let servercount++
 	fi
 done
-if [[ "$0" =~ 'fexec' ]]; then
+if [[ $0 =~ fexec ]]; then
 	sleep 5
 else
 	echo "Server count: $servercount"
