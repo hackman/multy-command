@@ -2,14 +2,15 @@
 version='1.5'
 server_list=$(<my_server_list);
 logs_dir='/home/hackman'
-logfile='/home/hackman/mutli-command.log'
+logfile=$logs_dir/sexec
 check_for_user='hackman'
 servercount=0
 okcount=0
 failedcount=0
 failedserver=()
+
 if [[ $0 =~ s|m|fexec ]]; then
-	echo "$(date +'%d.%b.%Y %T') $1" >> $logs_dir/sexec
+	echo "$(date +'%d.%b.%Y %T') $1" >> $logfile
 	if echo $1 | grep -q '\s*rm ' ; then
 		echo -e -n "Command: $1\nAre you sure you want to execute this command(y/n): "
 		read y
