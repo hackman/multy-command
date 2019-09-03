@@ -1,5 +1,5 @@
 #!/bin/bash
-version='1.6'
+version='1.7'
 server_list=$(<my_server_list);
 logs_dir='/home/hackman'
 logfile=$logs_dir/sexec
@@ -120,11 +120,21 @@ for server in $server_list; do
 		check_user $*
 		exec_usage $*
 		echo $server
-		if ssh -q -t $server "$1"; then
-			let okcount++
+		file_cmd=0
+		if [ "$file_cmd" == 0 ]; then
+			if ssh -t -q $server "$1" 2>/dev/null & then
+				let okcount++
+			else
+				let failedcount++
+				failedservers=(${failedservers[*]} $server)
+			fi
 		else
-			let failedcount++
-			failedservers=(${failedservers[*]} $server)
+			if ssh -t -q $server < $2 2>/dev/null & then
+				let okcount++
+			else
+				let failedcount++
+				failedservers=(${failedservers[*]} $server)
+			fi
 		fi
 		let servercount++
 	fi
