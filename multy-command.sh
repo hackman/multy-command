@@ -1,5 +1,5 @@
 #!/bin/bash
-version='2.0'
+version='2.1'
 server_list=$(<my_server_list);
 logs_dir='/home/hackman'
 logfile=$logs_dir/sexec
@@ -8,6 +8,11 @@ servercount=0
 okcount=0
 failedcount=0
 failedserver=()
+
+if [[ -n $SERVER_LIST ]] && [[ -f $SERVER_LIST ]]; then
+	server_list=$(<$SERVER_LIST)
+fi
+
 
 function check_user {
 	if ! pwd | grep -q "$check_for_user" ; then
