@@ -1,5 +1,5 @@
 #!/bin/bash
-version='3.0'
+version='4.0'
 server_list=$(<my_server_list);
 logs_dir='/home/hackman'
 logfile=$logs_dir/sexec
@@ -9,6 +9,8 @@ okcount=0
 failedcount=0
 failedserver=()
 file_cmd=''
+ssh_options='-t -q'
+background_sleep_time=3
 
 if [[ -n $SERVER_LIST ]] && [[ -f $SERVER_LIST ]]; then
 	server_list=$(<$SERVER_LIST)
@@ -50,14 +52,14 @@ function copy_usage {
 
 function mexec {
 	if [[ -z $file_cmd ]]; then
-		if ssh -t -q $server "$1" 2>/dev/null & then
+		if ssh $ssh_options $server "$1" 2>/dev/null & then
 			let okcount++
 		else
 			let failedcount++
 			failedservers=(${failedservers[*]} $server)
 		fi
 	else
-		if ssh -t -q $server < $file_cmd 2>/dev/null & then
+		if ssh $ssh_options $server < $file_cmd 2>/dev/null & then
 			let okcount++
 		else
 			let failedcount++
@@ -69,14 +71,14 @@ function mexec {
 function sexec {
 	echo $server
 	if [[ -z $file_cmd ]]; then
-		if ssh -t -q $server "$1" 2>/dev/null & then
+		if ssh $ssh_options $server "$1" 2>/dev/null & then
 			let okcount++
 		else
 			let failedcount++
 			failedservers=(${failedservers[*]} $server)
 		fi
 	else
-		if ssh -t -q $server < $file_cmd 2>/dev/null & then
+		if ssh $ssh_options $server < $file_cmd 2>/dev/null & then
 			let okcount++
 		else
 			let failedcount++
@@ -86,7 +88,7 @@ function sexec {
 	let servercount++
 }
 function fexec {
-	if ssh -t -q $server "echo \"\$(hostname) \$($1)\"" 2>/dev/null & then
+	if ssh $ssh_options $server "echo \"\$(hostname) \$($1)\"" 2>/dev/null & then
 		let okcount++
 	else
 		let failedcount++
@@ -165,7 +167,7 @@ for server in $server_list; do
 	fi
 done
 if [[ $0 =~ [fm]exec ]]; then
-	sleep 5
+	sleep $background_sleep_time
 fi
 
 echo "Server count: $servercount"
