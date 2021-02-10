@@ -21,4 +21,20 @@ mcopy - parallel copy of a certain file to all server from $server_list, this is
 configuration files and archives under 2MB
 
 
+The mexec and sexec commands can also be used to execute local scripts on the remote servers:
+  Usage: $0 command|- script_file
+  The - script_file option can be used only with mexec and sexec.
+  Examples:
+      $0 - script.sh
+
+So all *exec commands can be used with a command as:
+      $0 'cp /etc/exim.conf /etc/exim.old'
+
+But only sexec and mexec can be used with scripts like:
+      $0 - script.sh
+
+The copy commands can be used as:
+  Usage: $0 local_file remote_destination
+  Example:
+      $0 test.sh /usr/local/sbin
 
