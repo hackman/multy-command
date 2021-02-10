@@ -1,5 +1,5 @@
 #!/bin/bash
-version='4.0'
+version='4.1'
 server_list=$(<my_server_list);
 logs_dir='/home/hackman'
 logfile=$logs_dir/sexec
@@ -14,6 +14,9 @@ background_sleep_time=3
 
 if [[ -n $SERVER_LIST ]] && [[ -f $SERVER_LIST ]]; then
 	server_list=$(<$SERVER_LIST)
+fi
+if [[ -n $BACKGROUN_SLEEP_TIME ]] && [[ $BACKGROUN_SLEEP_TIME =~ ^[0-9]+$ ]]; then
+	background_sleep_time=$BACKGROUN_SLEEP_TIME
 fi
 
 function check_user {
