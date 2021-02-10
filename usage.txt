@@ -38,3 +38,6 @@ The copy commands can be used as:
   Example:
       $0 test.sh /usr/local/sbin
 
+
+If you specify a file in the SERVER_LIST environment variable, the contents of that file will be used as the server list.
+If you specify a number in the BACKGROUND_SLEEP_TIME environment variable, that number will be used to wait for s/m/fexec commands, before producing the server status information.
