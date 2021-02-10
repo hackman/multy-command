@@ -1,5 +1,5 @@
 #!/bin/bash
-version='2.1'
+version='3.0'
 server_list=$(<my_server_list);
 logs_dir='/home/hackman'
 logfile=$logs_dir/sexec
@@ -8,11 +8,11 @@ servercount=0
 okcount=0
 failedcount=0
 failedserver=()
+file_cmd=''
 
 if [[ -n $SERVER_LIST ]] && [[ -f $SERVER_LIST ]]; then
 	server_list=$(<$SERVER_LIST)
 fi
-
 
 function check_user {
 	if ! pwd | grep -q "$check_for_user" ; then
@@ -21,15 +21,23 @@ function check_user {
 	fi
 }
 
+function exec_usage_exit {
+	echo -e "Usage: $0 command|- script_file\nThe - script_file option can be used only with mexec and sexec.\nExamples:\n\t$0 'cp /etc/exim.conf /etc/exim.old'\n\t$0 - script.sh\n"
+	exit 1
+}
+
 function exec_usage {
-	if [ $# -ne 1 ]; then
-		if [ $# == 2 ] && [ "$1" == '-' ] && [ -f "$2" ]; then
-			echo "Using script file: $2"
-			file_cmd=1
-		else
-			echo -e "Usage: $0 command|- script_file\nThe - script_file option can be used only with mexec and sexec.\nExamples:\n\t$0 'cp /etc/exim.conf /etc/exim.old'\n\t$0 - script.sh\n"
-			exit 1
+	if [[ -n $1 ]]; then
+		if [[ $1 == - ]]; then
+			if  [[ -f $2 ]]; then
+				echo "Using script file: $2"
+				file_cmd=$2
+			else
+				exec_usage_exit
+			fi
 		fi
+	else
+		exec_usage_exit
 	fi
 }
 
@@ -41,10 +49,7 @@ function copy_usage {
 }
 
 function mexec {
-	check_user $*
-	exec_usage $*
-	file_cmd=0
-	if [ "$file_cmd" == 0 ]; then
+	if [[ -z $file_cmd ]]; then
 		if ssh -t -q $server "$1" 2>/dev/null & then
 			let okcount++
 		else
@@ -52,7 +57,7 @@ function mexec {
 			failedservers=(${failedservers[*]} $server)
 		fi
 	else
-		if ssh -t -q $server < $2 2>/dev/null & then
+		if ssh -t -q $server < $file_cmd 2>/dev/null & then
 			let okcount++
 		else
 			let failedcount++
@@ -62,11 +67,8 @@ function mexec {
 	let servercount++
 }
 function sexec {
-	check_user $*
-	exec_usage $*
 	echo $server
-	file_cmd=0
-	if [ "$file_cmd" == 0 ]; then
+	if [[ -z $file_cmd ]]; then
 		if ssh -t -q $server "$1" 2>/dev/null & then
 			let okcount++
 		else
@@ -74,7 +76,7 @@ function sexec {
 			failedservers=(${failedservers[*]} $server)
 		fi
 	else
-		if ssh -t -q $server < $2 2>/dev/null & then
+		if ssh -t -q $server < $file_cmd 2>/dev/null & then
 			let okcount++
 		else
 			let failedcount++
@@ -84,8 +86,6 @@ function sexec {
 	let servercount++
 }
 function fexec {
-	check_user $*
-	exec_usage $*
 	if ssh -t -q $server "echo \"\$(hostname) \$($1)\"" 2>/dev/null & then
 		let okcount++
 	else
@@ -116,8 +116,10 @@ function scopy {
 	let servercount++
 }
 
-if [[ $0 =~ s|m|fexec ]]; then
-	echo "$(date +'%d.%b.%Y %T') $1" >> $logfile
+if [[ $0 =~ [smf]exec ]]; then
+	check_user
+	exec_usage "$1" "$2" "$3"
+	echo "$(date +'%d.%b.%Y %T') $*" >> $logfile
 	if echo $1 | grep -q '\s*rm ' ; then
 		echo -e -n "Command: $1\nAre you sure you want to execute this command(y/n): "
 		read y
@@ -135,23 +137,25 @@ if [[ $0 =~ s|m|fexec ]]; then
 	fi
 fi
 
-if [[ $0 =~ scopy ]]; then
-	logfile="$logs_dir/mcopy"
+if [[ $0 =~ copy ]]; then
+	if [[ $0 =~ scopy ]]; then
+		logfile="$logs_dir/mcopy.log"
+	fi
+	if [[ $0 =~ mcopy ]]; then
+		logfile="$logs_dir/scopy.log"
+	fi
+	echo "$(date +'%d.%b.%Y %T') File $1 copied to all servers at $2" >> $logfile
 fi
-if [[ $0 =~ mcopy ]]; then
-	logfile="$logs_dir/scopy"
-fi
-echo "$(date +'%d.%b.%Y %T') File $1 copied to all servers at $2" >> $logfile
 
 for server in $server_list; do
 	if [[ $0 =~ mexec ]]; then
-		mexec $*
+		mexec "$1"
 	fi
 	if [[ $0 =~ sexec ]]; then
-		sexec $*
+		sexec "$1"
 	fi
 	if [[ $0 =~ fexec ]]; then
-		fexec $*
+		fexec "$1"
 	fi
 	if [[ $0 =~ mcopy ]]; then
 		mcopy $*
@@ -160,20 +164,20 @@ for server in $server_list; do
 		scopy $*
 	fi
 done
-if [[ $0 =~ fexec ]]; then
+if [[ $0 =~ [fm]exec ]]; then
 	sleep 5
-else
-	echo "Server count: $servercount"
-	echo "OK servers: $okcount"
-	echo "Failed servers: $failedcount"
-	if [ "$failedcount" -gt 0 ]; then
-		echo -n "List failed servers (y/n): "
-		read a
-		if [ "$a" == 'y' ]; then
-			for i in ${failedservers[*]}; do 
-				echo -e "\t$i"
-			done
-		fi
+fi
+
+echo "Server count: $servercount"
+echo "OK servers: $okcount"
+echo "Failed servers: $failedcount"
+if [ "$failedcount" -gt 0 ]; then
+	echo -n "List failed servers (y/n): "
+	read a
+	if [ "$a" == 'y' ]; then
+		for i in ${failedservers[*]}; do
+			echo -e "\t$i"
+		done
 	fi
 fi
 exit 0
