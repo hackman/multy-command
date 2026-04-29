@@ -23,7 +23,6 @@ ln -s /usr/local/bin/multy-command.sh /usr/local/bin/mexec
 ln -s /usr/local/bin/multy-command.sh /usr/local/bin/fexec
 ln -s /usr/local/bin/multy-command.sh /usr/local/bin/scopy
 ln -s /usr/local/bin/multy-command.sh /usr/local/bin/mcopy
-ln -s /usr/local/bin/multy-command.sh /usr/local/bin/rcopy
 ```
 The script determines behavior based on how it is invoked ($0).
 
@@ -33,7 +32,6 @@ The script determines behavior based on how it is invoked ($0).
 * mexec - Parallel execution of the supplied command on all servers from $server_list performed in background
 * fexec - Parallel execution of the supplied command on all servers from $server_list performed in background, but print the output with the hostname of every machine, so we can get better ordered output
 * scopy - Sequential copy of a file to all servers from $server_list, this is usefull for files bigger then 2-3MB
-* rcopy - Recursive copy of directory to all servers, sequentially
 * mcopy - Parallel copy of a file to all server from $server_list, this is usefull for transfering configuration files and archives under 2MB
 
 # Usage
