@@ -74,21 +74,16 @@ function sexec {
 }
 function mexec {
 	if [[ -z $file_cmd ]]; then
-		if ssh $ssh_options $server "$1" 2>/dev/null & then
-			let okcount++
-		else
-			let failedcount++
-			failedservers=(${failedservers[*]} $server)
-		fi
+		ssh $ssh_options $server "$1" 2>/dev/null &
+		pid=$!
+		pid_server[$pid]=$server
 	else
-		if ssh $ssh_options $server < $file_cmd 2>/dev/null & then
-			let okcount++
-		else
-			let failedcount++
-			failedservers=(${failedservers[*]} $server)
-		fi
+		ssh $ssh_options $server < $file_cmd 2>/dev/null &
+		pid=$!
+		pid_server[$pid]=$server
 	fi
-	let servercount++
+
+	((servercount++))
 }
 function fexec {
 	if ssh $ssh_options $server "echo \"\$(hostname) \$($1)\"" 2>/dev/null & then
@@ -170,7 +165,15 @@ for server in $server_list; do
 	fi
 done
 if [[ $0 =~ [fm]exec ]]; then
-	sleep $background_sleep_time
+	for pid in "${!pid_server[@]}"; do
+		server=${pid_server[$pid]}
+		if wait "$pid"; then
+			((okcount++))
+		else
+			((failedcount++))
+			failedservers+=("$server")
+		fi
+	done
 fi
 
 echo "Server count: $servercount"
