@@ -1,5 +1,5 @@
 #!/bin/bash
-version='4.1'
+version='5.0'
 server_list=$(<my_server_list);
 logs_dir='/home/hackman'
 logfile=$logs_dir/sexec
@@ -11,6 +11,8 @@ failedserver=()
 file_cmd=''
 ssh_options='-t -q'
 background_sleep_time=3
+cmd=$(basename -- "$0")
+
 
 if [[ -n $SERVER_LIST ]] && [[ -f $SERVER_LIST ]]; then
 	server_list=$(<$SERVER_LIST)
@@ -146,21 +148,20 @@ if [[ $0 =~ copy ]]; then
 fi
 
 for server in $server_list; do
-	if [[ $0 =~ mexec ]]; then
-		mexec "$1"
-	fi
-	if [[ $0 =~ sexec ]]; then
-		sexec "$1"
-	fi
-	if [[ $0 =~ fexec ]]; then
-		fexec "$1"
-	fi
-	if [[ $0 =~ mcopy ]]; then
-		mcopy $*
-	fi
-	if [[ $0 =~ scopy ]]; then
-		scopy $*
-	fi
+	case "$cmd" in
+		*mexec*)
+			mexec "$1" ;;
+		*sexec*)
+			sexec "$1" ;;
+		*fexec*)
+			fexec "$1" ;;
+		*mcopy*)
+			mcopy "$@" ;;
+		*scopy*)
+			scopy "$@" ;;
+		*rcopy*)
+			rcopy "$@" ;;
+	esac	
 done
 if [[ $0 =~ [fm]exec ]]; then
 	for pid in "${!pid_server[@]}"; do
