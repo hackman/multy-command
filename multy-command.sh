@@ -86,13 +86,11 @@ function mexec {
 	((servercount++))
 }
 function fexec {
-	if ssh $ssh_options $server "echo \"\$(hostname) \$($1)\"" 2>/dev/null & then
-		let okcount++
-	else
-		let failedcount++
-		failedservers=(${failedservers[*]} $server)
-	fi
-	let servercount++
+	ssh $ssh_options "$server" 'out=$('"$1"');rc=$?;printf "%25s %s\n" "$(hostname)" "$out";exit $rc' 2>/dev/null &
+	pid=$!
+	pid_server[$pid]=$server
+
+	((servercount++))	
 }
 function mcopy {
 	copy_usage $*
