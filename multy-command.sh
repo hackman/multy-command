@@ -53,7 +53,8 @@ function copy_usage {
 	fi
 }
 
-function mexec {
+function sexec {
+	echo $server
 	if [[ -z $file_cmd ]]; then
 		if ssh $ssh_options $server "$1" 2>/dev/null & then
 			let okcount++
@@ -71,8 +72,7 @@ function mexec {
 	fi
 	let servercount++
 }
-function sexec {
-	echo $server
+function mexec {
 	if [[ -z $file_cmd ]]; then
 		if ssh $ssh_options $server "$1" 2>/dev/null & then
 			let okcount++
