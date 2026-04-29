@@ -1,5 +1,5 @@
 #!/bin/bash
-version='5.0'
+version='5.1'
 server_list=$(<my_server_list);
 logs_dir='/home/hackman'
 logfile=$logs_dir/sexec
@@ -107,7 +107,11 @@ function mcopy {
 function scopy {
 	copy_usage $*
 	echo $server
-	if scp $1 $server:$2; then
+	scp_opt=''
+	if [[ -d $1 ]]; then
+		scp_opt='-r'
+	fi
+	if scp $scp_opt $1 $server:$2; then
 		let okcount++
 	else
 		let failedcount++
@@ -159,8 +163,6 @@ for server in $server_list; do
 			mcopy "$@" ;;
 		*scopy*)
 			scopy "$@" ;;
-		*rcopy*)
-			rcopy "$@" ;;
 	esac	
 done
 if [[ $0 =~ [fm]exec ]]; then
